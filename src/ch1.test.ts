@@ -1,5 +1,6 @@
-import Redis from "ioredis"
-import { UserId, Article } from "./ch1"
+import Redis, { Redis as Client } from "ioredis"
+import * as assert from "assert"
+import { UserId, Article, removeGroups, ArticleId } from "./ch1"
 import {
   voteArticle,
   postArticle,
@@ -8,48 +9,67 @@ import {
   getGroupArticles
 } from "./ch1"
 
-async function start() {
-  const client = new Redis()
-  await client.flushall()
+const delay = (seconds: number) =>
+  new Promise(r => setTimeout(r, seconds * 1000))
 
-  /* below is test code part */
+describe("chapter 1", async () => {
+  let client: Client
+
   const userId = "1" as UserId
-  const articleId = await postArticle(
-    client,
-    userId,
-    "article title",
-    "some text"
-  )
-  const articleKey = `article:${articleId}`
-  console.log("We posted a new article with id:", articleId)
-  // assert(typeof articleId === 'string')
 
-  const article: Article = await client.hgetall(articleKey)
-  console.log("It's HASH looks like: ")
-  console.log(article)
-  // assert(article.title === "article title")
+  let articleId: ArticleId
+  let articleKey: string
 
-  await voteArticle(client, userId, articleId)
-  const votes = await client.hget(articleKey, "votes")
-  console.log("We voted for the article, it now has votes:", votes)
-  // assert(votes === 1)
+  beforeAll(async () => {
+    client = new Redis()
+    await client.flushall()
+  })
 
-  const articles = await getArticles(client, 1)
-  console.log("The currently highest-scoring articles are:")
-  console.log(articles)
-  // assert(articles.length === 1)
+  afterAll(async () => {
+    await client.quit()
+  })
 
-  {
+  test("Post new article", async () => {
+    articleId = await postArticle(client, userId, "article title", "some text")
+    articleKey = `article:${articleId}`
+    expect(articleId).toBe("1")
+  })
+
+  test("Get article HASH", async () => {
+    const article: Article = await client.hgetall(articleKey)
+    expect(article).toMatchObject({
+      id: "1",
+      user: "1",
+      title: "article title"
+    })
+  })
+
+  test("Vote for the article", async () => {
+    await voteArticle(client, userId, articleId)
+    const votes = await client.hget(articleKey, "votes").then(parseInt)
+    expect(votes).toBe(1)
+  })
+
+  test("Get the currently highest-scoring articles", async () => {
+    const articles = await getArticles(client, 1)
+    expect(articles.length).toBe(1)
+  })
+
+  test(`Add article to music group`, async () => {
     await addGroups(client, articleId, ["music"])
     const articles = await getGroupArticles(client, 1, "score", "music")
-    console.log(
-      "We added the article to a music group, other articles include:"
-    )
-    console.log(articles)
-    // assert(articles.length === 1)
-  }
+    expect(articles.length).toBe(1)
+  })
 
-  console.log("chapter 1: test has been passed")
-}
+  test("Expect no articles haven't added to programming group", async () => {
+    const articles = await getGroupArticles(client, 1, "score", "programming")
+    expect(articles.length).toBe(0)
+  })
 
-export { start }
+  test("Remove article from a music group", async () => {
+    await removeGroups(client, articleId, ["music"])
+    await delay(1.5) // delay to wait till expire group
+    const articles = await getGroupArticles(client, 1, "score", "music")
+    expect(articles.length).toBe(0)
+  })
+})
