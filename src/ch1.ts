@@ -20,7 +20,7 @@ interface Article {
 const ONE_WEEK_IN_SECONDS = 7 * 86400
 const VOTE_SCORE = 432
 const ARTICLES_PER_PAGE = 25
-const GROUP_ARTICLES_EXPIRE_TIME = 60
+const GROUP_ARTICLES_EXPIRE_TIME = 1
 
 // if the user hasn't voted for this article before,
 // increment the article score and vote count
@@ -151,12 +151,26 @@ const getGroupArticles = async function(
   const groupKey = `group:${group}`
   const orderKey = `${order}:`
   if (!(await client.exists(orderGroupKey))) {
-    await client.zinterstore(orderGroupKey, 2, groupKey, orderKey)
+    await client.zinterstore(
+      orderGroupKey,
+      2,
+      groupKey,
+      orderKey,
+      "AGGREGATE",
+      "MAX"
+    )
     await client.expire(orderGroupKey, GROUP_ARTICLES_EXPIRE_TIME)
   }
-  return getArticles(client, page, order)
+  return getArticles(client, page, order, group)
 }
 
 export { UserId, User }
 export { ArticleId, Article }
-export { voteArticle, postArticle, getArticles, addGroups, getGroupArticles }
+export {
+  voteArticle,
+  postArticle,
+  getArticles,
+  addGroups,
+  removeGroups,
+  getGroupArticles
+}
