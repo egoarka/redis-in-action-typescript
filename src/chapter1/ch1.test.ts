@@ -1,12 +1,12 @@
 import Redis, { Redis as Client } from "ioredis"
-import * as assert from "assert"
-import { UserId, Article, removeGroups, ArticleId } from "./ch1"
+import { UserId, Article, ArticleId } from "./ch1.h"
 import {
   voteArticle,
   postArticle,
   getArticles,
   addGroups,
-  getGroupArticles
+  getGroupArticles,
+  removeGroups
 } from "./ch1"
 
 const delay = (seconds: number) =>

@@ -1,21 +1,5 @@
 import { Redis as Client } from "ioredis"
-
-type UserId = string & { __user: any }
-interface User {
-  id: UserId
-  name: string
-}
-
-type ArticleId = string & { __article: any }
-interface Article {
-  id: ArticleId
-  user: UserId
-  title: string
-  text: string
-
-  time: number
-  votes: number
-}
+import { UserId, ArticleId, Article } from "./ch1.h"
 
 const ONE_WEEK_IN_SECONDS = 7 * 86400
 const VOTE_SCORE = 432
@@ -41,7 +25,7 @@ const voteArticle = async function(
     return
   }
 
-  // vote to article
+  // vote for article
   // if already voted return zero
   if (!(await client.sadd(articleVotedKey, userKey))) {
     return
@@ -164,8 +148,6 @@ const getGroupArticles = async function(
   return getArticles(client, page, order, group)
 }
 
-export { UserId, User }
-export { ArticleId, Article }
 export {
   voteArticle,
   postArticle,
