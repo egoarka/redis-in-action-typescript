@@ -26,6 +26,7 @@ describe("chapter 1", async () => {
   })
 
   afterAll(async () => {
+    await client.flushall()
     await client.quit()
   })
 

@@ -8,11 +8,11 @@ const GROUP_ARTICLES_EXPIRE_TIME = 1
 
 // if the user hasn't voted for this article before,
 // increment the article score and vote count
-const voteArticle = async function(
+const voteArticle = async (
   client: Client,
   userId: UserId,
   articleId: ArticleId
-) {
+) => {
   const userKey = `user:${userId}`
   const articleKey = `article:${articleId}`
   const articleVotedKey = `voted:${articleId}`
@@ -35,12 +35,12 @@ const voteArticle = async function(
   await client.hincrby(articleKey, "votes", 1)
 }
 
-const postArticle = async function(
+const postArticle = async (
   client: Client,
   userId: UserId,
   title: string,
   text: string
-): Promise<ArticleId> {
+): Promise<ArticleId> => {
   // generate a new article id
   const articleId = await client
     .incr("article:")
@@ -78,12 +78,12 @@ const postArticle = async function(
 }
 
 type Order = "score" | "time"
-const getArticles = async function(
+const getArticles = async (
   client: Client,
   page: number,
   order: Order = "score",
   group: Group = ""
-) {
+) => {
   const orderKey = `${order}:${group}`
   const start = (page - 1) * (ARTICLES_PER_PAGE - 1)
   const end = start + (ARTICLES_PER_PAGE - 1)
@@ -100,11 +100,11 @@ const getArticles = async function(
 
 type Group = "music" | "programming" | ""
 // add the article to group that it should be part of
-const addGroups = async function(
+const addGroups = async (
   client: Client,
   articleId: ArticleId,
   groups: Group[] = []
-) {
+) => {
   const articleKey = `article:${articleId}`
   for (let group of groups) {
     const groupKey = `group:${group}`
@@ -113,11 +113,11 @@ const addGroups = async function(
 }
 
 // remove the article from group that it should be removed from
-const removeGroups = async function(
+const removeGroups = async (
   client: Client,
   articleId: ArticleId,
   groups: Group[] = []
-) {
+) => {
   const articleKey = `article:${articleId}`
   for (let group of groups) {
     const groupKey = `group:${group}`
@@ -125,12 +125,12 @@ const removeGroups = async function(
   }
 }
 
-const getGroupArticles = async function(
+const getGroupArticles = async (
   client: Client,
   page: number,
   order: Order = "score",
   group: Group
-) {
+) => {
   const orderGroupKey = `${order}:${group}`
   const groupKey = `group:${group}`
   const orderKey = `${order}:`

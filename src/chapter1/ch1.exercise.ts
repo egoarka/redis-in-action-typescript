@@ -7,12 +7,12 @@ const ARTICLES_PER_PAGE = 25
 const GROUP_ARTICLES_EXPIRE_TIME = 1
 
 type Reaction = "up" | "down"
-const voteArticle = async function(
+const voteArticle = async (
   client: Client,
   userId: UserId,
   articleId: ArticleId,
   reaction: Reaction
-) {
+) => {
   const userKey = `user:${userId}`
   const articleKey = `article:${articleId}`
   const articleVotedKey = `${reaction}voted:${articleId}`
@@ -55,12 +55,12 @@ const voteArticle = async function(
   }
 }
 
-const postArticle = async function(
+const postArticle = async (
   client: Client,
   userId: UserId,
   title: string,
   text: string
-): Promise<ArticleId> {
+): Promise<ArticleId> => {
   // generate a new article id
   const articleId = await client
     .incr("article:")
