@@ -1627,10 +1627,6 @@ jest-environment-node@^23.4.0:
     jest-mock "^23.2.0"
     jest-util "^23.4.0"
 
-jest-expect-message@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/jest-expect-message/-/jest-expect-message-1.0.0.tgz#396972ea153cf452dcde000f276da509303293fb"
-
 jest-get-type@^22.1.0:
   version "22.4.3"
   resolved "https://registry.yarnpkg.com/jest-get-type/-/jest-get-type-22.4.3.tgz#e3a8504d8479342dd4420236b322869f18900ce4"
