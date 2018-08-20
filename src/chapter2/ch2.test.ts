@@ -123,7 +123,7 @@ describe("chapter 2", async () => {
     })
   })
 
-  describe.only("Cache", async () => {
+  describe("Cache", async () => {
     const token = uuid() as Token
     const request: Request = {
       url: "http://test.com/",
@@ -168,7 +168,7 @@ describe("chapter 2", async () => {
       expect(isDynamicCaching).toBe(false)
     })
 
-    test.only("Rows", async () => {
+    test("Rows", async () => {
       // first, let's schedule caching of itemR every 2 seconds
       await scheduleRowCache(client, "itemR", 2)
       // output is ['rowId', 'timestamp', ..., ..., ...]

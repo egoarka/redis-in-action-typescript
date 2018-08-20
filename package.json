@@ -1,7 +1,7 @@
 {
   "scripts": {
     "debug": "DEBUG=ioredis:* npx ts-node ./src/index.test.ts",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
