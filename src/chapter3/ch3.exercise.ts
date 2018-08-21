@@ -1,0 +1,52 @@
+import { Redis as Client } from "ioredis"
+import { UserId, Token, Request, RequestHandler } from "../chapter2/ch2.h"
+import { delay } from "../utilts"
+
+const checkToken = async (client: Client, token: Token) =>
+  (await client.hget("login:", token)) as UserId
+
+const updateToken = async (
+  client: Client,
+  token: Token,
+  userId: UserId,
+  item = ""
+) => {
+  // const now = Date.now().toString()
+  // store user info (userId) by token key
+  await client.hset("login:", token, userId)
+
+  await client.lpush("recent:", token)
+  if (!item) return
+  const sessionToken = `viewed:${token}`
+
+  await client.lpush(sessionToken, item)
+  await client.ltrim(sessionToken, 0, 24)
+
+  await client.zincrby("viewed:", -1, item)
+}
+
+export class GlobalVars {
+  public static QUIT = false
+  public static LIMIT = 10 * 1e6
+}
+
+const cleanSessions = async (client: Client) => {
+  while (!GlobalVars.QUIT) {
+    // retrieve count of tokens
+    const size = await client.llen("recent:")
+    if (size <= GlobalVars.LIMIT) {
+      await delay(1)
+      continue
+    }
+
+    const endIndex = Math.min(size - GlobalVars.LIMIT, 100)
+    const tokens: string[] = await client.lrange("recent:", endIndex - 1, -1)
+    const sessionTokens = tokens.map(token => `viewed:${token}`)
+    // remove the oldest tokens
+    await client.del(...sessionTokens) // users' activities
+    await client.hdel("login:", ...tokens) // their info's
+    await client.ltrim("recent:", 0, endIndex - 1) // and tokens itself
+  }
+}
+
+export { checkToken, updateToken, cleanSessions }
