@@ -12,6 +12,11 @@ type Request = {
     [key: string]: any
   }
 }
+type Cart = {
+  // item: count
+  [item: string]: string
+}
+
 type RequestHandler = (request: Request) => string
 
-export { Token, UserId, User, Request, RequestHandler }
+export { Token, UserId, User, Request, Cart, RequestHandler }

@@ -1,5 +1,5 @@
 import Redis, { Redis as Client } from "ioredis"
-import { UserId, Token, RequestHandler, Request } from "./ch2.h"
+import { UserId, Token, RequestHandler, Request, Cart } from "./ch2.h"
 
 import {
   updateToken,
@@ -16,19 +16,7 @@ import {
   hash
 } from "./ch2"
 
-type Cart = {
-  // item: count
-  [item: string]: string
-}
-
-const delay = (seconds: number) =>
-  new Promise(r => setTimeout(r, seconds * 1000))
-
-const uuid = () =>
-  [...new Array(32)]
-    .fill(0)
-    .map(_ => ((Math.random() * 16) | 0).toString(16))
-    .join("")
+import { uuid, delay } from "../utilts"
 
 describe("chapter 2", async () => {
   let client: Client

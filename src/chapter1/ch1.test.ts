@@ -8,9 +8,7 @@ import {
   getGroupArticles,
   removeGroups
 } from "./ch1"
-
-const delay = (seconds: number) =>
-  new Promise(r => setTimeout(r, seconds * 1000))
+import { delay } from "../utilts"
 
 describe("chapter 1", async () => {
   let client: Client
