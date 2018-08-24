@@ -1,9 +1,44 @@
 import { Redis as Client } from "ioredis"
 import { UserId, Token, Request, RequestHandler } from "../chapter2/ch2.h"
 import { delay } from "../utilts"
+import { Article, ArticleId } from "../chapter1/ch1.h"
+
+const ONE_WEEK_IN_SECONDS = 7 * 86400
+const VOTE_SCORE = 432
+const ARTICLES_PER_PAGE = 25
+const GROUP_ARTICLES_EXPIRE_TIME = 1
 
 const checkToken = async (client: Client, token: Token) =>
   (await client.hget("login:", token)) as UserId
+
+// if the user hasn't voted for this article before,
+// increment the article score and vote count
+const voteArticle = async (
+  client: Client,
+  userId: UserId,
+  articleId: ArticleId
+) => {
+  const userKey = `user:${userId}`
+  const articleKey = `article:${articleId}`
+  const articleVotedKey = `voted:${articleId}`
+
+  const cutoff = Date.now() - ONE_WEEK_IN_SECONDS
+  const time = await client.zscore("time:", articleKey).then(parseFloat)
+
+  // if week has passed then ignore this article
+  if (time < cutoff) {
+    return
+  }
+
+  // vote for article
+  // if already voted return zero
+  if (!(await client.sadd(articleVotedKey, userKey))) {
+    return
+  }
+
+  await client.zincrby("score:", VOTE_SCORE, articleKey).then(console.log)
+  await client.hincrby(articleKey, "votes", 1).then(console.log)
+}
 
 const updateToken = async (
   client: Client,
@@ -49,4 +84,4 @@ const cleanSessions = async (client: Client) => {
   }
 }
 
-export { checkToken, updateToken, cleanSessions }
+export { voteArticle, checkToken, updateToken, cleanSessions }
