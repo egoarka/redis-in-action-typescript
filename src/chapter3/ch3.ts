@@ -100,7 +100,7 @@ const startTrans = async () => {
   await client.disconnect()
 }
 
-startTrans()
+// startTrans()
 // 1
 // 1
 // 1

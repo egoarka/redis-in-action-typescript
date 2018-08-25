@@ -4,10 +4,17 @@ import {
   checkToken,
   updateToken,
   cleanSessions,
-  GlobalVars
+  GlobalVars,
+  getArticles
 } from "./ch3.exercise"
 
 import { uuid, delay } from "../utilts"
+import { postArticle } from "../chapter1/ch1"
+
+// Exercise: Reducing memory use with LISTs (done)
+// Exercise: Removing of race conditions (in progress)
+// Exercise: Improving performance (done)
+// Exercise: Replacing timestamp ZSETs with EXPIRE (done)
 
 describe("chapter 3 (exercise)", async () => {
   let client: Client
@@ -15,7 +22,8 @@ describe("chapter 3 (exercise)", async () => {
   const userId = "303" as UserId
 
   beforeAll(async () => {
-    client = new Redis()
+    client = new Redis({ lazyConnect: true })
+    await client.connect()
     await client.flushall()
   })
 
@@ -68,6 +76,31 @@ describe("chapter 3 (exercise)", async () => {
       // ltrim 0 endIndex - 1 -> ltrim 0 0
       expect(recentCount).toBe(1)
       expect(viewedCount).toBe(0)
+    })
+  })
+
+  describe.only("Improving performance", async () => {
+    test("Get articles", async () => {
+      await postArticle(client, userId, "title 55", "text of 55")
+      await postArticle(client, userId, "title 42", "text of 42")
+
+      const result = await getArticles(client, 0)
+      expect(result).toMatchObject([
+        [
+          null,
+          expect.objectContaining({
+            id: "2",
+            title: "title 42"
+          })
+        ],
+        [
+          null,
+          expect.objectContaining({
+            id: "1",
+            title: "title 55"
+          })
+        ]
+      ])
     })
   })
 })
